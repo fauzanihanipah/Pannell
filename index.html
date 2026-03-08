@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OGH-ZIV Premium Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#020b14;--bg2:#040f1c;--panel:#060d1a;
+  --border:#0d3555;--border-glow:#0e6aad;
+  --accent:#00c8ff;--accent2:#00ff9d;--accent3:#ff6b35;
+  --gold:#ffd700;--red:#ff3b3b;--red2:#ff6060;
+  --text:#c8e8ff;--text-dim:#4d7fa3;
+  --glow:0 0 18px #00c8ff44;
+  --sidebar:230px;
+}
+html,body{height:100%;background:var(--bg);font-family:'Rajdhani',sans-serif;color:var(--text);overflow:hidden}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,200,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,.025) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(0,100,200,.12) 0%,transparent 65%);
+  pointer-events:none;z-index:0}
+.scan{position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px)}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.login-box{width:380px;position:relative;z-index:1;animation:fadeUp .5s ease both}
+.login-logo{text-align:center;margin-bottom:28px}
+.l-title{font-family:'Orbitron',monospace;font-size:2.2rem;font-weight:900;
+  background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent));background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:gradShift 4s linear infinite;filter:drop-shadow(0 0 14px #00c8ff88)}
+.l-sub{font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:6px;color:var(--text-dim);margin-top:4px}
+.login-card{background:var(--panel);border:1px solid var(--border-glow);padding:30px;position:relative;overflow:hidden}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),var(--accent),transparent);animation:shimmer 3s linear infinite}
+.login-card h3{font-family:'Orbitron',monospace;font-size:.7rem;letter-spacing:4px;color:var(--text-dim);text-align:center;margin-bottom:22px}
+.fg{margin-bottom:14px}
+.fg label{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--text-dim);letter-spacing:2px;display:block;margin-bottom:5px}
+.fg input,.fg select,.fg textarea{width:100%;background:#020e1e;border:1px solid var(--border);color:var(--text);padding:9px 12px;font-family:'Share Tech Mono',monospace;font-size:.8rem;outline:none;transition:border .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent)}
+.fg select option{background:var(--panel)}
+.fg textarea{resize:vertical;min-height:80px}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn-login{width:100%;padding:12px;background:linear-gradient(135deg,#0a3a5e,#0d5080);border:1px solid var(--accent);
+  color:var(--accent);font-family:'Orbitron',monospace;font-size:.72rem;letter-spacing:3px;cursor:pointer;transition:all .2s;margin-top:6px}
+.btn-login:hover{background:linear-gradient(135deg,#0d5080,#0a3a5e);box-shadow:var(--glow)}
+.login-error{color:var(--red);font-size:.72rem;text-align:center;margin-top:10px;font-family:'Share Tech Mono',monospace;display:none}
+
+/* LAYOUT */
+#app{display:flex;height:100vh;position:relative;z-index:1}
+.sidebar{width:var(--sidebar);background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.sidebar-logo{padding:18px 14px 14px;border-bottom:1px solid var(--border);text-align:center}
+.s-title{font-family:'Orbitron',monospace;font-size:1.05rem;font-weight:900;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 8px #00c8ff66)}
+.s-sub{font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:3px;color:var(--text-dim);margin-top:2px}
+.s-badge{display:inline-block;font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:2px;color:var(--gold);border:1px solid var(--gold);padding:2px 6px;margin-top:5px;opacity:.8}
+.sidebar-status{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.status-dot.running{background:var(--accent2);box-shadow:0 0 8px var(--accent2);animation:pulse 2s infinite}
+.status-dot.stopped{background:var(--red);box-shadow:0 0 8px var(--red)}
+.status-txt{font-family:'Share Tech Mono',monospace;font-size:.62rem}
+.status-txt span{display:block;color:var(--text-dim);font-size:.52rem;margin-top:1px}
+.sidebar-nav{flex:1;overflow-y:auto;padding:6px 0}
+.sidebar-nav::-webkit-scrollbar{width:3px}
+.sidebar-nav::-webkit-scrollbar-thumb{background:var(--border)}
+.nav-section{padding:8px 14px 3px;font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:3px;color:var(--text-dim)}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;transition:all .15s;position:relative;font-size:.83rem;font-weight:600;color:var(--text-dim)}
+.nav-item:hover{background:rgba(0,200,255,.06);color:var(--text)}
+.nav-item.active{background:rgba(0,200,255,.1);color:var(--accent)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.nav-item .nav-icon{width:18px;text-align:center;font-size:.95rem}
+.nav-item.danger{color:var(--red2)}
+.nav-item.danger:hover{background:rgba(255,59,59,.06)}
+.nav-item.danger.active{color:var(--red);background:rgba(255,59,59,.08)}
+.nav-item.danger.active::before{background:var(--red)}
+.nav-installed-badge{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--accent2);
+  border:1px solid var(--accent2);padding:1px 4px;margin-left:auto;opacity:.8}
+.nav-not-installed{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--accent3);
+  border:1px solid var(--accent3);padding:1px 4px;margin-left:auto;opacity:.8}
+.sidebar-footer{padding:10px 14px;border-top:1px solid var(--border)}
+.sf-user{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--text-dim)}
+.btn-logout{width:100%;margin-top:7px;padding:7px;background:transparent;border:1px solid var(--border);
+  color:var(--text-dim);font-family:'Orbitron',monospace;font-size:.58rem;letter-spacing:2px;cursor:pointer;transition:all .2s}
+.btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:11px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(4,15,28,.8);backdrop-filter:blur(8px)}
+.page-title{font-family:'Orbitron',monospace;font-size:.82rem;font-weight:700;color:var(--accent);letter-spacing:3px}
+.topbar-right{display:flex;align-items:center;gap:14px;font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--text-dim)}
+.content{flex:1;overflow-y:auto;padding:18px 22px}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-thumb{background:var(--border)}
+
+/* PAGES */
+.page{display:none;animation:fadeUp .3s ease both}
+.page.active{display:block}
+
+/* CARDS */
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.info-card{background:var(--panel);border:1px solid var(--border);padding:12px 16px;position:relative;overflow:hidden}
+.info-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border-glow),transparent)}
+.info-card .ic-label{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--text-dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.info-card .ic-val{font-size:1rem;font-weight:700;color:var(--accent)}
+.info-card .ic-val.green{color:var(--accent2)}.ic-val.gold{color:var(--gold)}.ic-val.orange{color:var(--accent3)}.ic-val.red{color:var(--red2)}
+.stat-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:var(--panel);border:1px solid var(--border);padding:14px 16px}
+.stat-card .sc-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.stat-card .sc-label{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--text-dim);letter-spacing:2px}
+.stat-card .sc-val{font-family:'Orbitron',monospace;font-size:.85rem;font-weight:700}
+.stat-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:2px;transition:width .8s ease}
+
+/* SECTION */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-family:'Orbitron',monospace;font-size:.72rem;color:var(--accent);letter-spacing:3px;display:flex;align-items:center;gap:7px}
+.section-title::before{content:'◈';color:var(--accent3)}
+
+/* TABLE */
+.data-table-wrap{background:var(--panel);border:1px solid var(--border);overflow:hidden}
+.data-table-wrap .table-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.data-table-wrap .table-title{font-family:'Orbitron',monospace;font-size:.62rem;color:var(--accent);letter-spacing:2px}
+table{width:100%;border-collapse:collapse}
+thead th{padding:9px 10px;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--text-dim);text-align:left;letter-spacing:1px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3)}
+tbody tr{border-bottom:1px solid rgba(13,53,85,.4);transition:background .15s}
+tbody tr:hover{background:rgba(0,200,255,.04)}
+tbody td{padding:9px 10px;font-size:.82rem}
+td.mono{font-family:'Share Tech Mono',monospace;font-size:.72rem}
+.badge{display:inline-block;padding:2px 7px;font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:1px;border-radius:1px}
+.badge.active{background:rgba(0,255,157,.1);color:var(--accent2);border:1px solid rgba(0,255,157,.3)}
+.badge.expired{background:rgba(255,59,59,.1);color:var(--red2);border:1px solid rgba(255,59,59,.3)}
+
+/* BUTTONS */
+.btn{padding:6px 13px;font-family:'Orbitron',monospace;font-size:.58rem;letter-spacing:2px;cursor:pointer;transition:all .2s;border:1px solid;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:rgba(0,200,255,.12);border-color:var(--accent);color:var(--accent)}
+.btn-primary:hover{background:rgba(0,200,255,.22);box-shadow:var(--glow)}
+.btn-success{background:rgba(0,255,157,.1);border-color:var(--accent2);color:var(--accent2)}
+.btn-success:hover{background:rgba(0,255,157,.2)}
+.btn-warn{background:rgba(255,107,53,.1);border-color:var(--accent3);color:var(--accent3)}
+.btn-warn:hover{background:rgba(255,107,53,.2)}
+.btn-danger{background:rgba(255,59,59,.1);border-color:var(--red);color:var(--red2)}
+.btn-danger:hover{background:rgba(255,59,59,.2)}
+.btn-sm{padding:4px 10px;font-size:.54rem}
+.btn-xs{padding:3px 7px;font-size:.5rem}
+.btn-group{display:flex;gap:7px;flex-wrap:wrap}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border-glow);width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),var(--accent),transparent)}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Orbitron',monospace;font-size:.67rem;color:var(--accent);letter-spacing:3px}
+.modal-close{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.1rem;transition:color .2s;line-height:1}
+.modal-close:hover{color:var(--red)}
+.modal-body{padding:18px}
+.modal-footer{padding:11px 18px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end}
+
+/* TOAST */
+.toast-wrap{position:fixed;top:18px;right:18px;z-index:1000;display:flex;flex-direction:column;gap:7px}
+.toast{padding:11px 16px;background:var(--panel);border-left:3px solid;font-family:'Share Tech Mono',monospace;font-size:.68rem;max-width:300px;animation:slideIn .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.ok{border-color:var(--accent2);color:var(--accent2)}
+.toast.err{border-color:var(--red);color:var(--red2)}
+.toast.info{border-color:var(--accent);color:var(--accent)}
+
+/* LOG/TERMINAL */
+.log-box{background:#010810;border:1px solid var(--border);padding:12px;font-family:'Share Tech Mono',monospace;font-size:.63rem;line-height:1.7;color:var(--text-dim);height:320px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+.log-box::-webkit-scrollbar{width:3px}
+.log-box::-webkit-scrollbar-thumb{background:var(--border)}
+
+/* TERMINAL — Install Page */
+.terminal{background:#010810;border:1px solid var(--border-glow);padding:0;position:relative;overflow:hidden}
+.terminal-titlebar{background:#0a2440;padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.terminal-dot{width:10px;height:10px;border-radius:50%}
+.t-red{background:#ff5f57}.t-yellow{background:#febc2e}.t-green{background:#28c840}
+.terminal-title{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--text-dim);margin-left:4px}
+.terminal-body{height:420px;overflow-y:auto;padding:14px;font-family:'Share Tech Mono',monospace;font-size:.65rem;line-height:1.8;color:#8fb5c8}
+.terminal-body::-webkit-scrollbar{width:3px}
+.terminal-body::-webkit-scrollbar-thumb{background:var(--border)}
+.t-ok{color:var(--accent2)}.t-err{color:var(--red2)}.t-warn{color:var(--gold)}.t-step{color:var(--accent)}.t-title{color:var(--accent);font-weight:bold}.t-success{color:var(--accent2);font-weight:bold}.t-sep{color:var(--border-glow)}.t-blank{color:transparent}
+
+/* AKUN CARD */
+.akun-card{background:#010810;border:1px solid var(--accent);padding:18px;font-family:'Share Tech Mono',monospace;font-size:.72rem;line-height:2}
+.akun-card .ak-row{display:flex;gap:10px;border-bottom:1px solid rgba(13,53,85,.4);padding:3px 0}
+.akun-card .ak-row:last-child{border-bottom:none}
+.ak-key{color:var(--text-dim);min-width:110px}.ak-val{color:var(--text);font-weight:600}
+.ak-val.accent{color:var(--accent)}.ak-val.green{color:var(--accent2)}.ak-val.gold{color:var(--gold)}.ak-val.red{color:var(--red2)}
+
+/* SETTINGS */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.settings-card{background:var(--panel);border:1px solid var(--border);padding:18px}
+.settings-card h4{font-family:'Orbitron',monospace;font-size:.62rem;color:var(--accent);letter-spacing:3px;margin-bottom:14px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+
+/* INSTALL STATUS BADGE */
+.install-status-bar{background:var(--panel);border:1px solid var(--border);padding:10px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.isb-left{display:flex;align-items:center;gap:10px;font-family:'Share Tech Mono',monospace;font-size:.65rem}
+.isb-dot{width:10px;height:10px;border-radius:50%}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes gradShift{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.blink{animation:pulse 1s step-end infinite}
+.empty-state{text-align:center;padding:36px;color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:.72rem}
+.empty-state .es-icon{font-size:2.2rem;display:block;margin-bottom:10px;opacity:.4}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border)}
+</style>
+</head>
+<body>
+<div class="scan"></div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="l-title">OGH-ZIV</div>
+      <div class="l-sub">SECURE VPN MANAGEMENT</div>
+    </div>
+    <div class="login-card">
+      <h3>◈ ACCESS PANEL ◈</h3>
+      <div class="fg"><label>USERNAME</label><input class="login-user" id="login-user" type="text" value="admin" autocomplete="off"></div>
+      <div class="fg"><label>PASSWORD</label><input id="login-pass" type="password" placeholder="oghziv123"></div>
+      <button class="btn-login" onclick="doLogin()">› MASUK ‹</button>
+      <div class="login-error" id="login-err"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="s-title">OGH-ZIV</div>
+      <div class="s-sub">VPN MANAGER</div>
+      <div class="s-badge">PREMIUM</div>
+    </div>
+    <div class="sidebar-status">
+      <div class="status-dot stopped" id="svc-dot"></div>
+      <div class="status-txt"><span id="svc-status-txt">STOPPED</span><span>ZiVPN Service</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">MAIN</div>
+      <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-section">MANAGEMENT</div>
+      <div class="nav-item" onclick="showPage('users')" data-page="users"><span class="nav-icon">👤</span> Kelola Akun</div>
+      <div class="nav-item" onclick="showPage('service')" data-page="service"><span class="nav-icon">⚙️</span> Service</div>
+      <div class="nav-item" onclick="showPage('bandwidth')" data-page="bandwidth"><span class="nav-icon">📶</span> Bandwidth</div>
+      <div class="nav-item" onclick="showPage('domain')" data-page="domain"><span class="nav-icon">🌐</span> Domain</div>
+      <div class="nav-section">TOOLS</div>
+      <div class="nav-item" onclick="showPage('telegram')" data-page="telegram"><span class="nav-icon">🤖</span> Telegram Bot</div>
+      <div class="nav-item" onclick="showPage('jualan')" data-page="jualan"><span class="nav-icon">🛒</span> Toko</div>
+      <div class="nav-item" onclick="showPage('settings')" data-page="settings"><span class="nav-icon">🔧</span> Settings</div>
+      <div class="nav-section">SYSTEM</div>
+      <div class="nav-item" onclick="showPage('install')" data-page="install"><span class="nav-icon">🚀</span> Install ZiVPN <span class="nav-not-installed" id="install-badge">CEK</span></div>
+      <div class="nav-item danger" onclick="showPage('uninstall')" data-page="uninstall"><span class="nav-icon">🗑️</span> Uninstall</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sf-user">👤 admin │ OGH-ZIV v1.0</div>
+      <button class="btn-logout" onclick="doLogout()">✖ KELUAR</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">DASHBOARD</div>
+      <div class="topbar-right">
+        <span id="tb-time">--:--</span><span>│</span><span id="tb-date">--/--/----</span>
+        <span>│</span><span id="tb-ip" style="color:var(--accent)">...</span>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="info-grid">
+          <div class="info-card"><div class="ic-label">HOSTNAME</div><div class="ic-val" id="d-host">...</div></div>
+          <div class="info-card"><div class="ic-label">IP ADDRESS</div><div class="ic-val" id="d-ip">...</div></div>
+          <div class="info-card"><div class="ic-label">DOMAIN</div><div class="ic-val" id="d-domain">...</div></div>
+          <div class="info-card"><div class="ic-label">PORT</div><div class="ic-val gold" id="d-port">...</div></div>
+          <div class="info-card"><div class="ic-label">OS</div><div class="ic-val" id="d-os" style="font-size:.82rem">...</div></div>
+          <div class="info-card"><div class="ic-label">BRAND</div><div class="ic-val orange" id="d-brand">...</div></div>
+        </div>
+        <div class="stat-cards">
+          <div class="stat-card"><div class="sc-top"><span class="sc-label">CPU</span><span class="sc-val" id="d-cpu" style="color:var(--accent2)">0%</span></div><div class="stat-bar"><div class="stat-bar-fill" id="d-cpu-bar" style="background:var(--accent2);width:0%"></div></div></div>
+          <div class="stat-card"><div class="sc-top"><span class="sc-label">RAM</span><span class="sc-val" id="d-ram" style="color:var(--accent)">0MB</span></div><div class="stat-bar"><div class="stat-bar-fill" id="d-ram-bar" style="background:var(--accent);width:0%"></div></div></div>
+          <div class="stat-card"><div class="sc-top"><span class="sc-label">DISK</span><span class="sc-val" id="d-disk" style="color:var(--gold)">0G</span></div><div class="stat-bar"><div class="stat-bar-fill" id="d-disk-bar" style="background:var(--gold);width:0%"></div></div></div>
+        </div>
+        <div class="stat-cards">
+          <div class="stat-card" style="border-color:var(--accent)"><div class="sc-top"><span class="sc-label">SERVICE</span></div><div style="font-family:'Orbitron',monospace;font-size:.72rem" id="d-svc">—</div></div>
+          <div class="stat-card"><div class="sc-top"><span class="sc-label">TOTAL AKUN</span></div><div class="sc-val" id="d-total" style="color:var(--accent);font-size:1.3rem">0</div></div>
+          <div class="stat-card"><div class="sc-top"><span class="sc-label">EXPIRED</span></div><div class="sc-val" id="d-exp" style="color:var(--red2);font-size:1.3rem">0</div></div>
+        </div>
+        <div style="text-align:right"><button class="btn btn-primary btn-sm" onclick="loadDashboard()">↻ REFRESH</button></div>
+      </div>
+
+      <!-- USERS -->
+      <div class="page" id="page-users">
+        <div class="section-header">
+          <div class="section-title">KELOLA AKUN USER</div>
+          <div class="btn-group">
+            <button class="btn btn-success btn-sm" onclick="openModal('modal-add')">＋ TAMBAH</button>
+            <button class="btn btn-warn btn-sm" onclick="openModal('modal-trial')">🎁 TRIAL</button>
+            <button class="btn btn-danger btn-sm" onclick="cleanExpired()">🧹 CLEAN</button>
+            <button class="btn btn-primary btn-sm" onclick="loadUsers()">↻</button>
+          </div>
+        </div>
+        <div class="data-table-wrap">
+          <div class="table-header">
+            <div class="table-title">DAFTAR AKUN VPN</div>
+            <span id="user-count" style="font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--text-dim)"></span>
+          </div>
+          <div style="overflow-x:auto">
+            <table><thead><tr><th>#</th><th>USERNAME</th><th>PASSWORD</th><th>EXPIRED</th><th>QUOTA</th><th>MAX</th><th>STATUS</th><th>AKSI</th></tr></thead>
+            <tbody id="user-tbody"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SERVICE -->
+      <div class="page" id="page-service">
+        <div class="section-header">
+          <div class="section-title">MANAJEMEN SERVICE</div>
+          <div class="btn-group">
+            <button class="btn btn-success btn-sm" onclick="svcAction('start')">▶ START</button>
+            <button class="btn btn-warn btn-sm" onclick="svcAction('restart')">↺ RESTART</button>
+            <button class="btn btn-danger btn-sm" onclick="svcAction('stop')">■ STOP</button>
+          </div>
+        </div>
+        <div class="info-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:14px">
+          <div class="info-card"><div class="ic-label">STATUS</div><div class="ic-val" id="svc-running-txt">—</div></div>
+          <div class="info-card"><div class="ic-label">PORT</div><div class="ic-val gold" id="svc-port-txt">—</div></div>
+        </div>
+        <div class="section-header" style="margin-top:16px">
+          <div class="section-title">LOG SERVICE</div>
+          <button class="btn btn-primary btn-sm" onclick="loadLog()">↻ REFRESH</button>
+        </div>
+        <div class="log-box" id="log-box">Klik REFRESH LOG...</div>
+        <div class="section-header" style="margin-top:16px"><div class="section-title">GANTI PORT</div></div>
+        <div style="display:flex;gap:10px;align-items:flex-end;max-width:320px">
+          <div class="fg" style="flex:1;margin:0"><label>PORT BARU</label><input type="number" id="new-port" placeholder="5667" min="1" max="65535"></div>
+          <button class="btn btn-warn" onclick="changePort()" style="height:38px">SIMPAN</button>
+        </div>
+        <div class="section-header" style="margin-top:16px"><div class="section-title">BACKUP DATA</div></div>
+        <button class="btn btn-primary" onclick="backupData()">💾 BUAT BACKUP</button>
+      </div>
+
+      <!-- BANDWIDTH -->
+      <div class="page" id="page-bandwidth">
+        <div class="section-header">
+          <div class="section-title">BANDWIDTH &amp; KONEKSI</div>
+          <button class="btn btn-primary btn-sm" onclick="loadBandwidth()">↻ REFRESH</button>
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--border);padding:12px 16px;margin-bottom:12px">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px">KONEKSI UDP AKTIF</div>
+          <div class="log-box" id="bw-conns" style="height:160px">Klik REFRESH...</div>
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--border);padding:12px 16px">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px">NETWORK INTERFACES</div>
+          <div id="bw-net"></div>
+        </div>
+      </div>
+
+      <!-- DOMAIN -->
+      <div class="page" id="page-domain">
+        <div class="section-header"><div class="section-title">MANAJEMEN DOMAIN</div></div>
+        <div class="info-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:16px">
+          <div class="info-card"><div class="ic-label">DOMAIN AKTIF</div><div class="ic-val" id="dom-current">—</div></div>
+          <div class="info-card"><div class="ic-label">IP PUBLIK</div><div class="ic-val" id="dom-ip">—</div></div>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h4>SET DOMAIN</h4>
+            <div class="fg"><label>DOMAIN / IP BARU</label><input type="text" id="domain-input" placeholder="vpn.example.com"></div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="setDomain()">SIMPAN</button>
+              <button class="btn btn-warn" onclick="useIP()">PAKAI IP</button>
+            </div>
+          </div>
+          <div class="settings-card">
+            <h4>CEK DNS &amp; SSL</h4>
+            <div id="dns-result" style="font-family:'Share Tech Mono',monospace;font-size:.67rem;color:var(--text-dim);min-height:56px;margin-bottom:12px;line-height:1.8">Klik CEK DNS...</div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="checkDNS()">🔍 CEK DNS</button>
+              <button class="btn btn-warn" onclick="regenSSL()">🔐 REGEN SSL</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TELEGRAM -->
+      <div class="page" id="page-telegram">
+        <div class="section-header"><div class="section-title">TELEGRAM BOT</div></div>
+        <div class="info-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:16px">
+          <div class="info-card"><div class="ic-label">STATUS BOT</div><div class="ic-val" id="bot-status-txt">—</div></div>
+          <div class="info-card"><div class="ic-label">BOT USERNAME</div><div class="ic-val green" id="bot-name-txt">—</div></div>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h4>SETUP BOT</h4>
+            <div class="fg"><label>BOT TOKEN</label><input type="text" id="bot-token" placeholder="123456:ABCDEF..."></div>
+            <div class="fg"><label>CHAT ID ADMIN</label><input type="text" id="bot-chatid" placeholder="12345678"></div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="setupBot()">HUBUNGKAN</button>
+              <button class="btn btn-success btn-sm" onclick="checkBotStatus()">CEK</button>
+            </div>
+          </div>
+          <div class="settings-card">
+            <h4>BROADCAST</h4>
+            <div class="fg"><label>PESAN (HTML)</label><textarea id="broadcast-msg" placeholder="Ketik pesan..."></textarea></div>
+            <button class="btn btn-warn" onclick="sendBroadcast()">📢 KIRIM</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- JUALAN -->
+      <div class="page" id="page-jualan">
+        <div class="section-header"><div class="section-title">PENGATURAN TOKO</div></div>
+        <div class="settings-card" style="max-width:440px">
+          <h4>INFO TOKO</h4>
+          <div class="fg"><label>NAMA BRAND</label><input type="text" id="store-brand" placeholder="OGH-ZIV"></div>
+          <div class="fg"><label>USERNAME TELEGRAM ADMIN</label><input type="text" id="store-tg" placeholder="username_telegram"></div>
+          <button class="btn btn-primary" onclick="saveStore()">SIMPAN</button>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="section-header"><div class="section-title">SETTINGS PANEL</div></div>
+        <div class="settings-card" style="max-width:400px">
+          <h4>UBAH PASSWORD PANEL</h4>
+          <div class="fg"><label>PASSWORD LAMA</label><input type="password" id="old-pass"></div>
+          <div class="fg"><label>PASSWORD BARU</label><input type="password" id="new-pass" placeholder="Min. 6 karakter"></div>
+          <div class="fg"><label>KONFIRMASI BARU</label><input type="password" id="confirm-pass"></div>
+          <button class="btn btn-warn" onclick="changePass()">🔑 UBAH PASSWORD</button>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--text-dim);line-height:1.9">
+            Default: admin / oghziv123<br>Panel port: 8080<br>Config dir: /etc/zivpn/
+          </div>
+        </div>
+      </div>
+
+      <!-- INSTALL ZIVPN -->
+      <div class="page" id="page-install">
+        <div class="section-header"><div class="section-title">INSTALL ZIVPN</div></div>
+        <div id="install-status-bar" class="install-status-bar">
+          <div class="isb-left">
+            <div class="isb-dot" id="isb-dot" style="background:var(--text-dim)"></div>
+            <span id="isb-txt" style="color:var(--text-dim)">Memeriksa status...</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="checkInstallStatus()">↻ CEK</button>
+        </div>
+        <div class="settings-grid" style="margin-bottom:16px">
+          <div class="settings-card">
+            <h4>KONFIGURASI INSTALL</h4>
+            <div class="fg"><label>DOMAIN / IP VPS</label><input type="text" id="inst-domain" placeholder="Auto-detect IP jika kosong"></div>
+            <div class="fg-row">
+              <div class="fg"><label>PORT UDP</label><input type="number" id="inst-port" value="5667" min="1" max="65535"></div>
+              <div class="fg"><label>NAMA BRAND</label><input type="text" id="inst-brand" value="OGH-ZIV"></div>
+            </div>
+            <div class="fg"><label>USERNAME TELEGRAM ADMIN</label><input type="text" id="inst-tg" placeholder="username_telegram (opsional)"></div>
+            <div style="margin-top:4px;padding:10px;background:rgba(255,107,53,.07);border:1px solid rgba(255,107,53,.3);font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--accent3);line-height:1.7;margin-bottom:14px">
+              ⚠ Install akan download binary ZiVPN dari GitHub<br>
+              ⚠ Install otomatis setup SSL, iptables, systemd<br>
+              ⚠ Data akun yang ada TIDAK akan dihapus saat re-install
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-success" id="btn-install" onclick="startInstall()">🚀 MULAI INSTALL</button>
+              <button class="btn btn-danger btn-sm" onclick="showPage('uninstall')">🗑 UNINSTALL</button>
+            </div>
+          </div>
+          <div class="settings-card" style="padding:0;overflow:hidden">
+            <div style="padding:14px 16px 10px;border-bottom:1px solid var(--border)">
+              <div style="font-family:'Orbitron',monospace;font-size:.62rem;color:var(--accent);letter-spacing:3px">INFO INSTALL</div>
+            </div>
+            <div style="padding:14px 16px;font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--text-dim);line-height:1.9">
+              <span style="color:var(--accent)">Binary URL:</span><br>
+              <span style="font-size:.55rem;word-break:break-all;color:var(--text-dim)">github.com/fauzanihanipah/ziv-udp</span><br><br>
+              <span style="color:var(--accent)">Yang akan diinstall:</span><br>
+              ✔ zivpn-bin (UDP service binary)<br>
+              ✔ config.json (dari GitHub)<br>
+              ✔ SSL Certificate (RSA-4096)<br>
+              ✔ Systemd service<br>
+              ✔ IPTables UDP forwarding<br>
+              ✔ Port 6000-19999 → Port VPN<br><br>
+              <span style="color:var(--accent)">Dependensi:</span><br>
+              curl wget openssl python3 iptables
+            </div>
+          </div>
+        </div>
+        <!-- TERMINAL OUTPUT -->
+        <div class="section-header"><div class="section-title">TERMINAL OUTPUT</div></div>
+        <div class="terminal">
+          <div class="terminal-titlebar">
+            <div class="terminal-dot t-red"></div>
+            <div class="terminal-dot t-yellow"></div>
+            <div class="terminal-dot t-green"></div>
+            <div class="terminal-title">root@vps — ogh-ziv install</div>
+          </div>
+          <div class="terminal-body" id="install-terminal">
+            <span style="color:var(--text-dim)">Siap. Konfigurasi dan klik [MULAI INSTALL]...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- UNINSTALL -->
+      <div class="page" id="page-uninstall">
+        <div class="section-header"><div class="section-title" style="color:var(--red)">UNINSTALL ZIVPN</div></div>
+        <div style="background:rgba(255,59,59,.07);border:1px solid rgba(255,59,59,.3);padding:18px;margin-bottom:16px;font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--red2);line-height:1.9">
+          ⚠ PERINGATAN — Uninstall akan MENGHAPUS PERMANEN:<br>
+          • Binary ZiVPN (/usr/local/bin/zivpn-bin)<br>
+          • Semua konfigurasi (/etc/zivpn/)<br>
+          • Data akun user (users.db)<br>
+          • Systemd service<br>
+          • IPTables rules<br>
+          • Menu command<br><br>
+          <span style="color:var(--gold)">Web panel ini TIDAK akan terhapus.</span>
+        </div>
+        <div class="fg" style="max-width:360px">
+          <label>KETIK "HAPUS" UNTUK KONFIRMASI</label>
+          <input type="text" id="uninstall-confirm" placeholder="HAPUS">
+        </div>
+        <button class="btn btn-danger" id="btn-uninstall" onclick="startUninstall()">🗑️ UNINSTALL SEKARANG</button>
+        <div class="section-header" style="margin-top:20px"><div class="section-title" style="color:var(--red)">TERMINAL OUTPUT</div></div>
+        <div class="terminal">
+          <div class="terminal-titlebar">
+            <div class="terminal-dot t-red"></div><div class="terminal-dot t-yellow"></div><div class="terminal-dot t-green"></div>
+            <div class="terminal-title">root@vps — ogh-ziv uninstall</div>
+          </div>
+          <div class="terminal-body" id="uninstall-terminal">
+            <span style="color:var(--text-dim)">Siap. Ketik konfirmasi dan klik [UNINSTALL]...</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">➕ TAMBAH AKUN</div><button class="modal-close" onclick="closeModal('modal-add')">✕</button></div>
+    <div class="modal-body">
+      <div class="fg-row">
+        <div class="fg"><label>USERNAME</label><input type="text" id="a-user" placeholder="username"></div>
+        <div class="fg"><label>PASSWORD (kosong=auto)</label><input type="text" id="a-pass" placeholder="auto"></div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label>MASA AKTIF (HARI)</label><input type="number" id="a-days" value="30" min="1"></div>
+        <div class="fg"><label>MAX LOGIN DEVICE</label><input type="number" id="a-ml" value="2" min="1"></div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label>KUOTA GB (0=∞)</label><input type="number" id="a-quota" value="0" min="0"></div>
+        <div class="fg"><label>CATATAN</label><input type="text" id="a-note" placeholder="-"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="addUser()">BUAT AKUN</button>
+      <button class="btn" style="border-color:var(--border);color:var(--text-dim)" onclick="closeModal('modal-add')">BATAL</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-trial">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🎁 AKUN TRIAL</div><button class="modal-close" onclick="closeModal('modal-trial')">✕</button></div>
+    <div class="modal-body"><p style="font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--text-dim);line-height:1.9">Username: trial + random 6 karakter<br>Masa aktif: 1 hari<br>Kuota: 1 GB<br>Max login: 2 device</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-success" onclick="makeTrial()">BUAT TRIAL</button>
+      <button class="btn" style="border-color:var(--border);color:var(--text-dim)" onclick="closeModal('modal-trial')">BATAL</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-renew">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🔁 PERPANJANG</div><button class="modal-close" onclick="closeModal('modal-renew')">✕</button></div>
+    <div class="modal-body">
+      <div class="fg"><label>USERNAME</label><input type="text" id="r-user" readonly style="opacity:.6"></div>
+      <div class="fg"><label>TAMBAH HARI</label><input type="number" id="r-days" value="30" min="1"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success" onclick="renewUser()">PERPANJANG</button>
+      <button class="btn" style="border-color:var(--border);color:var(--text-dim)" onclick="closeModal('modal-renew')">BATAL</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-chpass">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🔑 GANTI PASSWORD</div><button class="modal-close" onclick="closeModal('modal-chpass')">✕</button></div>
+    <div class="modal-body">
+      <div class="fg"><label>USERNAME</label><input type="text" id="cp-user" readonly style="opacity:.6"></div>
+      <div class="fg"><label>PASSWORD BARU (kosong=auto)</label><input type="text" id="cp-pass" placeholder="auto"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-warn" onclick="chpassUser()">UBAH</button>
+      <button class="btn" style="border-color:var(--border);color:var(--text-dim)" onclick="closeModal('modal-chpass')">BATAL</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-ml">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🔒 MAX LOGIN</div><button class="modal-close" onclick="closeModal('modal-ml')">✕</button></div>
+    <div class="modal-body">
+      <div class="fg"><label>USERNAME</label><input type="text" id="ml-user" readonly style="opacity:.6"></div>
+      <div class="fg"><label>MAX DEVICE</label><input type="number" id="ml-val" value="2" min="1"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-warn" onclick="setMaxLogin()">SIMPAN</button>
+      <button class="btn" style="border-color:var(--border);color:var(--text-dim)" onclick="closeModal('modal-ml')">BATAL</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal" style="width:500px">
+    <div class="modal-header"><div class="modal-title">📋 DETAIL AKUN</div><button class="modal-close" onclick="closeModal('modal-detail')">✕</button></div>
+    <div class="modal-body"><div class="akun-card" id="akun-card-content"></div></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary btn-sm" onclick="copyAkunInfo()">📋 COPY</button>
+      <button class="btn" style="border-color:var(--border);color:var(--text-dim)" onclick="closeModal('modal-detail')">TUTUP</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ API ══════════════════════════════════════════════════
+async function api(path, method='GET', body=null) {
+  const opts = {method, headers:{'Content-Type':'application/json'}};
+  if(body) opts.body = JSON.stringify(body);
+  try { const r = await fetch('/api'+path, opts); return await r.json(); }
+  catch(e) { return {ok:false, error:'Network error: '+e.message}; }
+}
+
+// ═══ TOAST ═══════════════════════════════════════════════
+function toast(msg, type='ok', dur=3500) {
+  const wrap = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`; t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all .3s'; setTimeout(()=>t.remove(),300); }, dur);
+}
+
+// ═══ MODAL ═══════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+
+// ═══ LOGIN ════════════════════════════════════════════════
+async function doLogin() {
+  const u=document.getElementById('login-user').value;
+  const p=document.getElementById('login-pass').value;
+  const r=await api('/login','POST',{username:u,password:p});
+  if(r.ok) { document.getElementById('login-screen').style.display='none'; document.getElementById('app').style.display='flex'; initApp(); }
+  else { const el=document.getElementById('login-err'); el.textContent=r.error||'Login gagal!'; el.style.display='block'; }
+}
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('login-user').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+async function doLogout() { await api('/logout','POST'); location.reload(); }
+
+// ═══ INIT ════════════════════════════════════════════════
+let currentPage = 'dashboard';
+function initApp() {
+  updateClock(); setInterval(updateClock, 1000);
+  loadDashboard(); checkInstallStatus();
+  setInterval(()=>{ if(currentPage==='dashboard') loadDashboard(); }, 15000);
+}
+(async()=>{
+  const r=await api('/session');
+  if(r.logged_in) { document.getElementById('login-screen').style.display='none'; document.getElementById('app').style.display='flex'; initApp(); }
+})();
+
+function updateClock() {
+  const n=new Date();
+  const pad=v=>String(v).padStart(2,'0');
+  document.getElementById('tb-time').textContent=pad(n.getHours())+':'+pad(n.getMinutes());
+  document.getElementById('tb-date').textContent=pad(n.getDate())+'/'+pad(n.getMonth()+1)+'/'+n.getFullYear();
+}
+
+// ═══ PAGE NAV ════════════════════════════════════════════
+const pageTitles={dashboard:'DASHBOARD',users:'KELOLA AKUN',service:'SERVICE',bandwidth:'BANDWIDTH',domain:'DOMAIN',telegram:'TELEGRAM BOT',jualan:'TOKO',settings:'SETTINGS',install:'INSTALL ZIVPN',uninstall:'UNINSTALL'};
+const pageLoaders={dashboard:loadDashboard,users:loadUsers,service:loadService,bandwidth:loadBandwidth,domain:loadDomain,telegram:loadTelegram,jualan:loadStore,settings:()=>{},install:()=>{checkInstallStatus();},uninstall:()=>{}};
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const ni=document.querySelector(`[data-page="${name}"]`); if(ni) ni.classList.add('active');
+  document.getElementById('page-title').textContent=pageTitles[name]||name.toUpperCase();
+  currentPage=name;
+  if(pageLoaders[name]) pageLoaders[name]();
+}
+
+// ═══ DASHBOARD ═══════════════════════════════════════════
+async function loadDashboard() {
+  const r=await api('/dashboard'); if(!r.ok) return;
+  document.getElementById('d-host').textContent=r.hostname||'—';
+  document.getElementById('d-ip').textContent=r.ip||'—';
+  document.getElementById('d-domain').textContent=r.domain||'—';
+  document.getElementById('d-port').textContent=r.port||'—';
+  document.getElementById('d-os').textContent=r.os||'—';
+  document.getElementById('d-brand').textContent=r.brand||'—';
+  document.getElementById('tb-ip').textContent=r.ip||'—';
+  document.getElementById('d-cpu').textContent=r.cpu+'%';
+  document.getElementById('d-cpu-bar').style.width=Math.min(parseFloat(r.cpu)||0,100)+'%';
+  document.getElementById('d-ram').textContent=r.ram_used+'MB/'+r.ram_total+'MB';
+  document.getElementById('d-ram-bar').style.width=(r.ram_pct||0)+'%';
+  document.getElementById('d-disk').textContent=r.disk_used+'/'+r.disk_total;
+  document.getElementById('d-disk-bar').style.width=(r.disk_pct||0)+'%';
+  document.getElementById('d-total').textContent=r.total_user||0;
+  document.getElementById('d-exp').textContent=r.exp_count||0;
+  const running=r.service_status==='RUNNING';
+  document.getElementById('svc-dot').className='status-dot '+(running?'running':'stopped');
+  document.getElementById('svc-status-txt').textContent=r.service_status||'—';
+  const dsvc=document.getElementById('d-svc');
+  dsvc.textContent=r.service_status||'—'; dsvc.style.color=running?'var(--accent2)':'var(--red)';
+  // Update install badge
+  const badge=document.getElementById('install-badge');
+  if(r.is_installed){ badge.textContent='OK'; badge.className='nav-installed-badge'; }
+  else{ badge.textContent='BELUM'; badge.className='nav-not-installed'; }
+}
+
+// ═══ INSTALL STATUS ═══════════════════════════════════════
+async function checkInstallStatus() {
+  const r=await api('/install/status'); if(!r.ok) return;
+  const dot=document.getElementById('isb-dot');
+  const txt=document.getElementById('isb-txt');
+  const badge=document.getElementById('install-badge');
+  if(r.installed){
+    dot.style.background='var(--accent2)'; txt.style.color='var(--accent2)'; txt.textContent='ZiVPN TERINSTALL';
+    badge.textContent='OK'; badge.className='nav-installed-badge';
+  } else {
+    dot.style.background='var(--accent3)'; txt.style.color='var(--accent3)'; txt.textContent='ZiVPN BELUM TERINSTALL';
+    badge.textContent='BELUM'; badge.className='nav-not-installed';
+  }
+  document.getElementById('btn-install').textContent=r.installed?'🔄 RE-INSTALL':'🚀 MULAI INSTALL';
+}
+
+// ═══ INSTALL — Terminal Streaming ════════════════════════
+let installSSE = null;
+
+function termAppend(termId, msg, type='info') {
+  const term=document.getElementById(termId);
+  const line=document.createElement('div');
+  const cls={ok:'t-ok',err:'t-err',warn:'t-warn',step:'t-step',title:'t-title',
+              success:'t-success',sep:'t-sep',blank:'t-blank',info:''}[type]||'';
+  if(cls) line.className=cls;
+  line.textContent=msg;
+  term.appendChild(line);
+  term.scrollTop=term.scrollHeight;
+}
+
+function termClear(termId) {
+  document.getElementById(termId).innerHTML='';
+}
+
+function startSSEStream(termId) {
+  if(installSSE){ installSSE.close(); installSSE=null; }
+  installSSE=new EventSource('/api/install/stream');
+  installSSE.onmessage=e=>{
+    try {
+      const data=JSON.parse(e.data);
+      if(data.type==='ping') return;
+      if(data.type==='done'){
+        installSSE.close(); installSSE=null;
+        const done=data.msg==='INSTALL_FAILED';
+        termAppend(termId, done?'[GAGAL]':'[SELESAI]', done?'err':'success');
+        document.getElementById('btn-install').disabled=false;
+        document.getElementById('btn-uninstall') && (document.getElementById('btn-uninstall').disabled=false);
+        checkInstallStatus(); loadDashboard();
+        return;
+      }
+      termAppend(termId, data.msg, data.type);
+    } catch(ex){}
+  };
+  installSSE.onerror=()=>{ installSSE.close(); installSSE=null; };
+}
+
+async function startInstall() {
+  const domain=document.getElementById('inst-domain').value.trim();
+  const port=document.getElementById('inst-port').value||'5667';
+  const brand=document.getElementById('inst-brand').value||'OGH-ZIV';
+  const tg=document.getElementById('inst-tg').value||'-';
+  termClear('install-terminal');
+  termAppend('install-terminal','Memulai instalasi ZiVPN...','step');
+  document.getElementById('btn-install').disabled=true;
+  startSSEStream('install-terminal');
+  const r=await api('/install/start','POST',{domain,port,brand,tg_admin:tg});
+  if(!r.ok){ toast(r.error,'err'); document.getElementById('btn-install').disabled=false; if(installSSE){installSSE.close();installSSE=null;} }
+}
+
+async function startUninstall() {
+  const cf=document.getElementById('uninstall-confirm').value;
+  if(cf!=='HAPUS') return toast('Ketik HAPUS untuk konfirmasi!','err');
+  if(!confirm('YAKIN uninstall OGH-ZIV? Semua data akun akan HAPUS PERMANEN!')) return;
+  termClear('uninstall-terminal');
+  termAppend('uninstall-terminal','Memulai uninstall...','step');
+  document.getElementById('btn-uninstall').disabled=true;
+  startSSEStream('uninstall-terminal');
+  const r=await api('/install/uninstall','POST');
+  if(!r.ok){ toast(r.error,'err'); document.getElementById('btn-uninstall').disabled=false; if(installSSE){installSSE.close();installSSE=null;} }
+}
+
+// ═══ USERS ═══════════════════════════════════════════════
+async function loadUsers() {
+  const r=await api('/users'); if(!r.ok) return;
+  const tbody=document.getElementById('user-tbody');
+  document.getElementById('user-count').textContent=`Total: ${r.total} │ Expired: ${r.expired}`;
+  if(!r.users.length){ tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><span class="es-icon">👤</span>Belum ada akun</div></td></tr>'; return; }
+  tbody.innerHTML=r.users.map(u=>`
+    <tr>
+      <td class="mono" style="color:var(--text-dim)">${u.no}</td>
+      <td style="font-weight:700">${u.username}</td>
+      <td class="mono" style="color:var(--accent3)">${u.password}</td>
+      <td class="mono" style="color:${u.status==='EXPIRED'?'var(--red2)':'var(--gold)'}">${u.expired}</td>
+      <td class="mono">${u.quota}</td>
+      <td class="mono" style="color:var(--text-dim)">${u.maxlogin}dev</td>
+      <td><span class="badge ${u.status==='AKTIF'?'active':'expired'}">${u.status}</span></td>
+      <td><div class="btn-group">
+        <button class="btn btn-primary btn-xs" onclick='showDetail(${JSON.stringify(u)})'>👁</button>
+        <button class="btn btn-success btn-xs" onclick="openRenew('${u.username}')">🔁</button>
+        <button class="btn btn-warn btn-xs" onclick="openChpass('${u.username}')">🔑</button>
+        <button class="btn btn-warn btn-xs" onclick="openML('${u.username}','${u.maxlogin}')">🔒</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteUser('${u.username}')">🗑</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function showDetail(u) {
+  const ip=document.getElementById('d-ip')?.textContent||'—';
+  const domain=document.getElementById('d-domain')?.textContent||'—';
+  const port=document.getElementById('d-port')?.textContent||'—';
+  document.getElementById('akun-card-content').innerHTML=`
+    <div class="ak-row"><span class="ak-key">Username</span><span class="ak-val accent">${u.username}</span></div>
+    <div class="ak-row"><span class="ak-key">Password</span><span class="ak-val gold">${u.password}</span></div>
+    <div class="ak-row"><span class="ak-key">IP Publik</span><span class="ak-val green">${ip}</span></div>
+    <div class="ak-row"><span class="ak-key">Host</span><span class="ak-val">${domain}</span></div>
+    <div class="ak-row"><span class="ak-key">Port</span><span class="ak-val gold">${port}</span></div>
+    <div class="ak-row"><span class="ak-key">Obfs</span><span class="ak-val">zivpn</span></div>
+    <div class="ak-row"><span class="ak-key">Kuota</span><span class="ak-val green">${u.quota}</span></div>
+    <div class="ak-row"><span class="ak-key">Max Login</span><span class="ak-val">${u.maxlogin} device</span></div>
+    <div class="ak-row"><span class="ak-key">Expired</span><span class="ak-val gold">${u.expired}</span></div>
+    <div class="ak-row"><span class="ak-key">Sisa</span><span class="ak-val ${u.sisa<0?'red':'green'}">${u.sisa<0?'EXPIRED':u.sisa+' hari'}</span></div>
+    <div class="ak-row"><span class="ak-key">Catatan</span><span class="ak-val">${u.note||'-'}</span></div>`;
+  openModal('modal-detail');
+}
+function copyAkunInfo() {
+  const rows=document.getElementById('akun-card-content').querySelectorAll('.ak-row');
+  let txt='=== INFO AKUN VPN OGH-ZIV ===\n';
+  rows.forEach(r=>{ txt+=`${r.querySelector('.ak-key')?.textContent}: ${r.querySelector('.ak-val')?.textContent}\n`; });
+  navigator.clipboard.writeText(txt).then(()=>toast('Disalin!')).catch(()=>toast('Gagal copy','err'));
+}
+
+async function addUser() {
+  const r=await api('/users/add','POST',{username:document.getElementById('a-user').value,password:document.getElementById('a-pass').value,days:document.getElementById('a-days').value,quota:document.getElementById('a-quota').value,note:document.getElementById('a-note').value,maxlogin:document.getElementById('a-ml').value});
+  r.ok?(toast(r.msg),closeModal('modal-add'),loadUsers(),document.getElementById('a-user').value=''):toast(r.error,'err');
+}
+async function deleteUser(un) {
+  if(!confirm(`Hapus "${un}"?`)) return;
+  const r=await api('/users/delete','POST',{username:un});
+  r.ok?(toast(r.msg),loadUsers()):toast(r.error,'err');
+}
+function openRenew(un){ document.getElementById('r-user').value=un; document.getElementById('r-days').value=30; openModal('modal-renew'); }
+async function renewUser() {
+  const r=await api('/users/renew','POST',{username:document.getElementById('r-user').value,days:document.getElementById('r-days').value});
+  r.ok?(toast(r.msg),closeModal('modal-renew'),loadUsers()):toast(r.error,'err');
+}
+function openChpass(un){ document.getElementById('cp-user').value=un; document.getElementById('cp-pass').value=''; openModal('modal-chpass'); }
+async function chpassUser() {
+  const r=await api('/users/chpass','POST',{username:document.getElementById('cp-user').value,password:document.getElementById('cp-pass').value});
+  r.ok?(toast(r.msg),closeModal('modal-chpass'),loadUsers()):toast(r.error,'err');
+}
+function openML(un,cur){ document.getElementById('ml-user').value=un; document.getElementById('ml-val').value=cur||2; openModal('modal-ml'); }
+async function setMaxLogin() {
+  const r=await api('/users/maxlogin','POST',{username:document.getElementById('ml-user').value,maxlogin:document.getElementById('ml-val').value});
+  r.ok?(toast(r.msg),closeModal('modal-ml'),loadUsers()):toast(r.error,'err');
+}
+async function makeTrial() {
+  const r=await api('/users/trial','POST');
+  r.ok?(toast('Trial: '+r.user.username+' / '+r.user.password),closeModal('modal-trial'),loadUsers()):toast(r.error,'err');
+}
+async function cleanExpired() {
+  if(!confirm('Hapus semua akun expired?')) return;
+  const r=await api('/users/clean','POST');
+  r.ok?(toast(r.msg),loadUsers()):toast(r.error,'err');
+}
+
+// ═══ SERVICE ══════════════════════════════════════════════
+async function loadService() {
+  const r=await api('/service/status'); if(!r.ok) return;
+  const el=document.getElementById('svc-running-txt');
+  el.textContent=r.running?'RUNNING':'STOPPED'; el.style.color=r.running?'var(--accent2)':'var(--red)';
+  document.getElementById('svc-port-txt').textContent=document.getElementById('d-port')?.textContent||'—';
+  document.getElementById('log-box').textContent=r.status;
+}
+async function svcAction(a) {
+  const r=await api('/service/'+a,'POST');
+  if(r.ok){ toast(r.msg,r.running?'ok':'info'); document.getElementById('svc-dot').className='status-dot '+(r.running?'running':'stopped'); document.getElementById('svc-status-txt').textContent=r.running?'RUNNING':'STOPPED'; }
+  else toast(r.error,'err');
+}
+async function loadLog() {
+  const r=await api('/service/log'); if(r.ok){ const b=document.getElementById('log-box'); b.textContent=r.log||'(kosong)'; b.scrollTop=b.scrollHeight; }
+}
+async function changePort() {
+  const np=document.getElementById('new-port').value; if(!np) return toast('Masukkan port!','err');
+  const r=await api('/service/port','POST',{port:np});
+  r.ok?toast(r.msg):toast(r.error,'err');
+}
+async function backupData() {
+  toast('Membuat backup...','info');
+  const r=await api('/service/backup','POST');
+  r.ok?toast(r.msg):toast(r.error,'err');
+}
+
+// ═══ BANDWIDTH ════════════════════════════════════════════
+async function loadBandwidth() {
+  const r=await api('/bandwidth'); if(!r.ok) return;
+  document.getElementById('bw-conns').textContent=r.connections.length?r.connections.join('\n'):'Tidak ada koneksi aktif.';
+  const ne=document.getElementById('bw-net');
+  ne.innerHTML=r.network.length?`<table style="width:100%;border-collapse:collapse"><thead><tr>
+    <th style="padding:7px;font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--text-dim);text-align:left">INTERFACE</th>
+    <th style="padding:7px;font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--text-dim);text-align:left">RX (bytes)</th>
+    <th style="padding:7px;font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--text-dim);text-align:left">TX (bytes)</th></tr></thead>
+    <tbody>${r.network.map(n=>`<tr style="border-top:1px solid rgba(13,53,85,.4)">
+      <td style="padding:7px;color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:.7rem">${n.iface}</td>
+      <td style="padding:7px;color:var(--accent2);font-family:'Share Tech Mono',monospace;font-size:.7rem">${parseInt(n.rx).toLocaleString()}</td>
+      <td style="padding:7px;color:var(--gold);font-family:'Share Tech Mono',monospace;font-size:.7rem">${parseInt(n.tx).toLocaleString()}</td>
+    </tr>`).join('')}</tbody></table>`:'<div class="empty-state"><span class="es-icon">📶</span>Tidak ada data</div>';
+}
+
+// ═══ DOMAIN ═══════════════════════════════════════════════
+async function loadDomain() {
+  const r=await api('/domain'); if(!r.ok) return;
+  document.getElementById('dom-current').textContent=r.domain||'—';
+  document.getElementById('dom-ip').textContent=r.ip||'—';
+}
+async function setDomain() {
+  const r=await api('/domain/set','POST',{domain:document.getElementById('domain-input').value.trim()});
+  r.ok?(toast(r.msg),loadDomain()):toast(r.error,'err');
+}
+async function useIP() { const r=await api('/domain/set','POST',{domain:''}); r.ok?(toast(r.msg),loadDomain()):toast(r.error,'err'); }
+async function checkDNS() {
+  const el=document.getElementById('dns-result'); el.textContent='Memeriksa DNS...';
+  const r=await api('/domain/check');
+  r.ok?el.innerHTML=`${r.match?'✅':'⚠️'} Domain: ${r.domain}<br>IP VPS: ${r.ip}<br>Resolved: ${r.resolved||'—'}<br><span style="color:${r.match?'var(--accent2)':'var(--red)'}">${r.match?'DNS OK!':'DNS Mismatch!'}</span>`:el.textContent='Error: '+(r.error||'-');
+}
+async function regenSSL() {
+  if(!confirm('Regenerasi SSL?')) return; toast('Membuat SSL...','info');
+  const r=await api('/domain/ssl','POST'); r.ok?toast(r.msg):toast(r.error,'err');
+}
+
+// ═══ TELEGRAM ════════════════════════════════════════════
+async function loadTelegram() {
+  const r=await api('/bot'); if(!r.ok) return;
+  const se=document.getElementById('bot-status-txt'); const ne=document.getElementById('bot-name-txt');
+  if(r.configured){ se.textContent='TERHUBUNG'; se.style.color='var(--accent2)'; ne.textContent='@'+r.bot_name; document.getElementById('bot-chatid').value=r.chat_id||''; }
+  else { se.textContent='BELUM SETUP'; se.style.color='var(--red)'; ne.textContent='—'; }
+}
+async function setupBot() {
+  const r=await api('/bot/setup','POST',{token:document.getElementById('bot-token').value.trim(),chat_id:document.getElementById('bot-chatid').value.trim()});
+  r.ok?(toast(r.msg),loadTelegram()):toast(r.error,'err');
+}
+async function checkBotStatus() {
+  const r=await api('/bot/status');
+  r.ok?toast(`Bot @${r.bot_name} aktif!`):toast(r.error||'Tidak terhubung','err');
+}
+async function sendBroadcast() {
+  const msg=document.getElementById('broadcast-msg').value.trim(); if(!msg) return toast('Pesan kosong!','err');
+  const r=await api('/bot/broadcast','POST',{message:msg});
+  r.ok?(toast(r.msg),document.getElementById('broadcast-msg').value=''):toast(r.error,'err');
+}
+
+// ═══ STORE ════════════════════════════════════════════════
+async function loadStore() {
+  const r=await api('/store'); if(!r.ok) return;
+  document.getElementById('store-brand').value=r.brand||'OGH-ZIV';
+  document.getElementById('store-tg').value=r.admin_tg||'-';
+}
+async function saveStore() {
+  const r=await api('/store/set','POST',{brand:document.getElementById('store-brand').value,admin_tg:document.getElementById('store-tg').value});
+  r.ok?toast(r.msg):toast(r.error,'err');
+}
+
+// ═══ SETTINGS ════════════════════════════════════════════
+async function changePass() {
+  const old=document.getElementById('old-pass').value;
+  const np=document.getElementById('new-pass').value;
+  const cp=document.getElementById('confirm-pass').value;
+  if(np!==cp) return toast('Password baru tidak cocok!','err');
+  const r=await api('/change-panel-pass','POST',{old,new:np});
+  if(r.ok){ toast(r.msg); ['old-pass','new-pass','confirm-pass'].forEach(id=>document.getElementById(id).value=''); }
+  else toast(r.error,'err');
+}
+</script>
+</body>
+</html>
