@@ -282,8 +282,10 @@ run_protocol_installers() {
     hr
     echo -e "  ${YELLOW}● INSTALL PROTOCOLS${NC}"
     hr
-    [[ -x /tmp/install-ssh.sh       ]] && bash /tmp/install-ssh.sh
+    # Urutan penting: Xray duluan (generate cert), baru SSH (pakai cert untuk nginx),
+    # baru Trojan-Go/Hysteria (reuse cert), baru SlowDNS, baru Fail2ban
     [[ -x /tmp/install-xray.sh      ]] && bash /tmp/install-xray.sh
+    [[ -x /tmp/install-ssh.sh       ]] && bash /tmp/install-ssh.sh
     [[ -x /tmp/install-trojango.sh  ]] && bash /tmp/install-trojango.sh
     [[ -x /tmp/install-hy2.sh       ]] && bash /tmp/install-hy2.sh
     [[ -x /tmp/install-slowdns.sh   ]] && bash /tmp/install-slowdns.sh
