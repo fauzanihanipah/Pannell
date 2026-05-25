@@ -130,9 +130,12 @@ install_bbr() {
     modprobe tcp_bbr 2>/dev/null
     grep -q 'tcp_bbr' /etc/modules-load.d/modules.conf 2>/dev/null || \
         echo "tcp_bbr" >> /etc/modules-load.d/modules.conf
+
+    # Bersihkan marker lama biar idempotent
+    sed -i '/# ALL PRO BBR/,/# END ALL PRO BBR/d' /etc/sysctl.conf
     cat >> /etc/sysctl.conf <<'EOF'
 
-# ALL PRO - Tuning
+# ALL PRO BBR
 net.core.default_qdisc=fq
 net.ipv4.tcp_congestion_control=bbr
 net.core.rmem_max=16777216
@@ -141,9 +144,42 @@ net.ipv4.udp_rmem_min=8192
 net.ipv4.udp_wmem_min=8192
 net.core.netdev_max_backlog=16384
 net.ipv4.ip_forward=1
+# END ALL PRO BBR
 EOF
     sysctl -p &>/dev/null
-    ok "BBR aktif"
+    local cc; cc=$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null)
+    if [[ "$cc" == "bbr" ]]; then
+        ok "BBR aktif (Fair Queue + UDP buffer optimasi)"
+    else
+        warn "BBR belum aktif sepenuhnya — kernel mungkin perlu reboot"
+    fi
+}
+
+install_ipv6_disable() {
+    inf "Menonaktifkan IPv6 (anti-leak)..."
+
+    # Bersihkan marker lama biar idempotent
+    sed -i '/# ALL PRO IPv6/,/# END ALL PRO IPv6/d' /etc/sysctl.conf
+    cat >> /etc/sysctl.conf <<'EOF'
+
+# ALL PRO IPv6
+net.ipv6.conf.all.disable_ipv6=1
+net.ipv6.conf.default.disable_ipv6=1
+net.ipv6.conf.lo.disable_ipv6=1
+# END ALL PRO IPv6
+EOF
+    sysctl -w net.ipv6.conf.all.disable_ipv6=1     &>/dev/null
+    sysctl -w net.ipv6.conf.default.disable_ipv6=1 &>/dev/null
+    sysctl -w net.ipv6.conf.lo.disable_ipv6=1      &>/dev/null
+    sysctl -p &>/dev/null
+
+    # Persistent via GRUB (efektif setelah reboot)
+    if [[ -f /etc/default/grub ]] && ! grep -q 'ipv6.disable=1' /etc/default/grub; then
+        sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 ipv6.disable=1"/' /etc/default/grub
+        update-grub &>/dev/null
+        inf "GRUB di-update (ipv6.disable=1) — efektif penuh setelah reboot"
+    fi
+    ok "IPv6 dinonaktifkan"
 }
 
 
@@ -216,6 +252,8 @@ fetch_modules() {
         "menu/menu-hy2.sh:${MENU_DIR}/menu-hy2"
         "menu/menu-slowdns.sh:${MENU_DIR}/menu-slowdns"
         "menu/menu-system.sh:${MENU_DIR}/menu-system"
+        "menu/menu-bbr.sh:${MENU_DIR}/menu-bbr"
+        "menu/menu-ipv6.sh:${MENU_DIR}/menu-ipv6"
         "menu/menu-backup.sh:${MENU_DIR}/menu-backup"
         "menu/menu-tema.sh:${MENU_DIR}/menu-tema"
         "menu/menu-about.sh:${MENU_DIR}/menu-about"
@@ -282,6 +320,7 @@ main() {
     prep_dirs
     input_config
     install_bbr
+    install_ipv6_disable
     download_binaries
     fetch_modules
     run_protocol_installers
