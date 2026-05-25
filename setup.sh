@@ -216,6 +216,8 @@ fetch_modules() {
         "menu/menu-hy2.sh:${MENU_DIR}/menu-hy2"
         "menu/menu-slowdns.sh:${MENU_DIR}/menu-slowdns"
         "menu/menu-system.sh:${MENU_DIR}/menu-system"
+        "menu/menu-bbr.sh:${MENU_DIR}/menu-bbr"
+        "menu/menu-ipv6.sh:${MENU_DIR}/menu-ipv6"
         "menu/menu-backup.sh:${MENU_DIR}/menu-backup"
         "menu/menu-tema.sh:${MENU_DIR}/menu-tema"
         "menu/menu-about.sh:${MENU_DIR}/menu-about"
